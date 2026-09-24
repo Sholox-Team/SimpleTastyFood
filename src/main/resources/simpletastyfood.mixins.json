@@ -1,0 +1,4 @@
+{
+  "package": "org.sholox.simpletastyfood.mixin",
+  "mixins": ["PlayerMixin"]
+}
