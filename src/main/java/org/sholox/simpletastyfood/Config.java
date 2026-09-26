@@ -74,6 +74,8 @@ public class Config {
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
+        if (event instanceof ModConfigEvent.Unloading) { return; }
+
         foodStackSize = FOOD_STACK_SIZE.get();
 
         minHealth = MIN_HEALTH.get();

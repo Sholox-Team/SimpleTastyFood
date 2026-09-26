@@ -11,6 +11,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.sholox.simpletastyfood.Config;
 import org.sholox.simpletastyfood.Simpletastyfood;
 import org.sholox.simpletastyfood.data.CustomFoodValuesLoader;
+import org.sholox.simpletastyfood.data.FoodValue;
 import org.sholox.simpletastyfood.data.ModDataAttachments;
 
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public class FoodValueCore {
 
     public static void onFoodEaten(ServerPlayer player, ResourceLocation resourceLocation,
                                    FoodProperties foodProperties) {
-        float foodValue = FoodValueCalculator.foodValue(resourceLocation, foodProperties);
+        FoodValue foodValue = FoodValueCalculator.foodValue(resourceLocation, foodProperties);
         saveEatenFoodValue(player, foodValue);
 
         updatePlayerMaxHealth(player);
@@ -72,37 +73,33 @@ public class FoodValueCore {
     }
 
     private static float calculateFoodValueBonusHealth(Player player) {
-        ArrayList<Float> foodValues = getFoodValues(player);
-        float sum = foodValues.stream()
-                .reduce(0f, (subresult, value) -> subresult + (value / valueForHealth));
+        ArrayList<FoodValue> foodValues = FoodValue.get(player);
+
+        System.out.println("Test " + foodValues);
+
+        float sum = (float) foodValues.stream()
+                .mapToDouble(value -> value.weightedValue() / valueForHealth)
+                .sum();
 
         return sum/foodValues.size();
     }
 
     // Player food values
-    private static void saveEatenFoodValue(Player player, float foodValue) {
-        ArrayList<Float> foodValues = getFoodValues(player);
+    private static void saveEatenFoodValue(Player player, FoodValue foodValue) {
+        ArrayList<FoodValue> foodValues = FoodValue.get(player);
         foodValues.add(foodValue);
 
         while (foodValues.size() > Config.foodStackSize) {
             foodValues.removeFirst();
         }
 
-        setFoodValues(player, foodValues);
-    }
-
-    private static ArrayList<Float> getFoodValues(Player player) {
-        return new ArrayList<>(player.getData(ModDataAttachments.FOOD_VALUES));
-    }
-
-    private static void setFoodValues(Player player, ArrayList<Float> foodValues) {
-        player.setData(ModDataAttachments.FOOD_VALUES, foodValues);
+        FoodValue.setFoodValues(player, foodValues);
     }
 
     // Food to health properties
     public static void updateFoodToHealthProperties(Map<ResourceLocation, FoodProperties> allFoodProperties) {
         Float[] allFoodValues = allFoodProperties.entrySet().stream()
-                .map(entry -> FoodValueCalculator.foodValue(entry.getKey(), entry.getValue()))
+                .map(entry -> FoodValueCalculator.foodValue(entry.getKey(), entry.getValue()).foodValue())
                 .toArray(Float[]::new);
 
         allFoodValues = ArrayUtils.addAll(allFoodValues, CustomFoodValuesLoader.getCustomValuesFlat());
