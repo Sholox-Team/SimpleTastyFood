@@ -60,7 +60,7 @@ public class CakeHelper {
 
         if (resource.toString().equals("minecraft:cake")) {
             foodProperties = vanillaCakeBlockFoodProperties();
-            parts = 6;
+            parts = 7;
         }
 
         FoodValue foodValue = FoodValueCalculator.foodValue(resource, foodProperties, parts);
@@ -68,7 +68,7 @@ public class CakeHelper {
     }
 
     private static FoodProperties vanillaCakeBlockFoodProperties() {
-        return new FoodProperties(2 * 6, 0.1F * 6, true, 1,
+        return new FoodProperties(2 * 7, 0.1F * 7, true, 1,
                 Optional.empty(), List.of());
     }
 

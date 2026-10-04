@@ -30,17 +30,17 @@ public record FoodValue(float foodValue, int parts) {
         player.setData(ModDataAttachments.FOOD_VALUES, foodValues);
     }
 
-    public static final Codec<FoodValue> CODEC = Codec
-        .either(Codec.FLOAT, FoodValue.DEFAULT_CODEC)
-        .xmap(either -> either.map(
-                    value -> new FoodValue(value, 1),
-                    value -> value), Either::right
-    );
-
     private static final Codec<FoodValue> DEFAULT_CODEC = RecordCodecBuilder.<FoodValue>create(instance ->
             instance.group(
                     Codec.FLOAT.fieldOf("foodValue").forGetter(FoodValue::foodValue),
                     Codec.INT.optionalFieldOf("parts", 1).forGetter(FoodValue::parts)
             ).apply(instance, FoodValue::new)
     );
+
+    public static final Codec<FoodValue> CODEC = Codec
+            .either(Codec.FLOAT, FoodValue.DEFAULT_CODEC)
+            .xmap(either -> either.map(
+                    value -> new FoodValue(value, 1),
+                    value -> value), Either::right
+            );
 }
