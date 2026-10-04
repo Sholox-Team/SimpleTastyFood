@@ -16,6 +16,10 @@ public class FoodValueCalculator {
     public static Map<ResourceLocation, Float> customFoodValues = new HashMap<ResourceLocation, Float>();
 
     public static FoodValue foodValue(ResourceLocation resourceLocation, FoodProperties foodProperties) {
+        return foodValue(resourceLocation, foodProperties, 1);
+    }
+
+    public static FoodValue foodValue(ResourceLocation resourceLocation, FoodProperties foodProperties, Integer parts) {
         FoodValueEvent foodValueEvent = new FoodValueEvent(resourceLocation, foodProperties);
         NeoForge.EVENT_BUS.post(foodValueEvent);
 
@@ -23,15 +27,15 @@ public class FoodValueCalculator {
         if (foodValueEvent.foodProperties != foodProperties) {
             var foodValue = calculateFoodValue(foodValueEvent.foodProperties);
 
-            return new FoodValue(foodValue, 1);
+            return new FoodValue(foodValue, parts);
         }
 
         Float customFoodValue = customFoodValues.get(resourceLocation);
         if (customFoodValue != null) {
-            return new FoodValue(customFoodValue, 1);
+            return new FoodValue(customFoodValue, parts);
         }
 
-        return new FoodValue(calculateFoodValue(foodProperties), 1);
+        return new FoodValue(calculateFoodValue(foodProperties), parts);
     }
 
     private static float calculateFoodValue(FoodProperties foodProperties) {
@@ -45,12 +49,10 @@ public class FoodValueCalculator {
                 int index = (int) (values.length * 0.95f);
                 return values[index];
             default: // NONE and default
-                return Arrays.stream(values)
-                        .max(Float::compare)
-                        .orElseGet(() -> {
-                            System.out.println(Simpletastyfood.MOD_ID + ": Found no food with the maximum value");
-                            return 11f; // Default result for vanilla minecraft
-                        });
+                return Arrays.stream(values).max(Float::compare).orElseGet(() -> {
+                    System.out.println(Simpletastyfood.MOD_ID + ": Found no food with the maximum value");
+                    return 11f; // Default result for vanilla minecraft
+                });
 
         }
     }

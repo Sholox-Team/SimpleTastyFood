@@ -24,6 +24,7 @@ import org.sholox.simpletastyfood.core.FoodValueCore;
 import org.sholox.simpletastyfood.core.PlayerHungerManager;
 import org.sholox.simpletastyfood.data.CustomFoodValuesLoader;
 import org.sholox.simpletastyfood.Simpletastyfood;
+import org.sholox.simpletastyfood.data.FoodValue;
 import org.sholox.simpletastyfood.item.ModItems;
 import org.sholox.simpletastyfood.mixin.PlayerMixin;
 
@@ -68,7 +69,8 @@ public class EventListener {
 
         if (useItemEvent.getEntity() instanceof Player player && foodProperties != null) {
             if (player instanceof ServerPlayer serverPlayer) {
-                FoodValueCore.onFoodEaten(serverPlayer, resourceLocation, foodProperties);
+                FoodValue foodValue = FoodValueCalculator.foodValue(resourceLocation, foodProperties);
+                FoodValueCore.onFoodEaten(foodValue, serverPlayer);
             } else if (player instanceof LocalPlayer localPlayer) {
                 ((PlayerMixin) localPlayer).setFlashOnSetHealth(false);
             }

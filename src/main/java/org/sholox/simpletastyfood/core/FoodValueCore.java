@@ -25,15 +25,11 @@ public class FoodValueCore {
 
     public static float valueForHealth = 1f;
 
-    public static void onFoodEaten(ServerPlayer player, ResourceLocation resourceLocation,
-                                   FoodProperties foodProperties) {
-        FoodValue foodValue = FoodValueCalculator.foodValue(resourceLocation, foodProperties);
+    public static void onFoodEaten(FoodValue foodValue, ServerPlayer player) {
         saveEatenFoodValue(player, foodValue);
-
         updatePlayerMaxHealth(player);
-        if (player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.resetSentInfo();
-        }
+
+        player.resetSentInfo();
     }
 
     // Player max health
@@ -75,25 +71,43 @@ public class FoodValueCore {
     private static float calculateFoodValueBonusHealth(Player player) {
         ArrayList<FoodValue> foodValues = FoodValue.get(player);
 
-        System.out.println("Test " + foodValues);
+        float sum = 0f;
+        float weightedSize = 0f;
 
-        float sum = (float) foodValues.stream()
-                .mapToDouble(value -> value.weightedValue() / valueForHealth)
-                .sum();
+        for (FoodValue foodValue : foodValues) {
+            sum += foodValue.weightedValue() / valueForHealth;
+            weightedSize += 1f/foodValue.parts();
+        }
 
-        return sum/foodValues.size();
+        return sum/weightedSize;
     }
 
     // Player food values
+    // We do all of this logic, because food can have multiple parts.
+    // List of 6-part meals is different from list of 1-part meals. In the end they should allow for the same bonus hp to apply
     private static void saveEatenFoodValue(Player player, FoodValue foodValue) {
         ArrayList<FoodValue> foodValues = FoodValue.get(player);
         foodValues.add(foodValue);
 
-        while (foodValues.size() > Config.foodStackSize) {
-            foodValues.removeFirst();
+        double weightedCount = foodValues.stream()
+                .mapToDouble(value -> 1f/value.parts())
+                .sum();
+
+        ArrayList<FoodValue> result = new ArrayList<>(foodValues);
+
+        // We want to keep values above the set size
+        if (weightedCount > Config.foodStackSize) {
+            for (FoodValue value : foodValues) {
+                float weightedSize = 1f / value.parts();
+
+                if (weightedCount - weightedSize < Config.foodStackSize) { break; }
+
+                result.removeFirst();
+                weightedCount -= weightedSize;
+            }
         }
 
-        FoodValue.setFoodValues(player, foodValues);
+        FoodValue.setFoodValues(player, result);
     }
 
     // Food to health properties
