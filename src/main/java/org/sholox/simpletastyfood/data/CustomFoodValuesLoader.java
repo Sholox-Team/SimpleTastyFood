@@ -2,6 +2,7 @@ package org.sholox.simpletastyfood.data;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import net.minecraft.resources.ResourceLocation;
 import org.sholox.simpletastyfood.Simpletastyfood;
@@ -17,7 +18,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class CustomFoodValuesLoader {
-    private static Map<ResourceLocation, Float> customValues = Map.of();
+    private static Map<ResourceLocation, FoodValue> customValues = Map.of();
 
     private static final Gson GSON = new GsonBuilder()
             .setPrettyPrinting()
@@ -37,27 +38,45 @@ public class CustomFoodValuesLoader {
         }
 
         try (Reader reader = Files.newBufferedReader(path)) {
-            Type type = new TypeToken<Map<String, Float>>() {}.getType();
+            customValues = readCustomValues(reader);
 
-            Map<String, Float> raw = GSON.fromJson(reader, type);
-
-            customValues = raw.entrySet().stream()
-                    .collect(Collectors.toMap(
-                            entry -> ResourceLocation.parse(entry.getKey()),
-                            Map.Entry::getValue
-                    ));
             System.out.println("Custom values. " + customValues);
         } catch (IOException e) {
             throw new RuntimeException("Failed to load food values", e);
         }
     }
 
-    public static Map<ResourceLocation, Float> getCustomValues() {
+    private static Map<ResourceLocation, FoodValue> readCustomValues(Reader reader) {
+        Type type = new TypeToken<Map<String, JsonElement>>() {}.getType();
+
+        Map<String, JsonElement> raw = GSON.fromJson(reader, type);
+
+        return raw.entrySet().stream()
+                .collect(Collectors.toMap(
+                        entry -> ResourceLocation.parse(entry.getKey()),
+                        entry -> {
+                            JsonElement value = entry.getValue();
+
+                            // Old format key:float
+                            if (value.isJsonPrimitive()) {
+                                return new FoodValue(value.getAsFloat(), 1);
+                            }
+
+                            // New format: key: { "foodValue": 4.0, "parts": 2 }
+                            return GSON.fromJson(value, FoodValue.class);
+                        }
+                ));
+    }
+
+    public static Map<ResourceLocation, FoodValue> getCustomValues() {
         return customValues;
     }
 
     public static Float[] getCustomValuesFlat() {
-        return customValues.values().toArray(new Float[0]);
+        return customValues.values()
+                .stream()
+                .map(FoodValue::foodValue)
+                .toArray(Float[]::new);
     }
 
     private static void createEmptyJson(Path path) {

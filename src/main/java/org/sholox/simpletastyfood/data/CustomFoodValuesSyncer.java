@@ -26,7 +26,7 @@ public class CustomFoodValuesSyncer {
     }
 
     public void sendCustomValues(ServerPlayer player) {
-        Map<ResourceLocation, Float> customValues = CustomFoodValuesLoader.getCustomValues();
+//        Map<ResourceLocation, Float> customValues = CustomFoodValuesLoader.getCustomValues();
 //        FoodValuesPacket packet = new FoodValuesPacket(customValues);
 
 //        PacketDistributor.sendToPlayer(player, packet);

@@ -95,6 +95,8 @@ public class FoodValueCore {
 
         ArrayList<FoodValue> result = new ArrayList<>(foodValues);
 
+        System.out.println("Test eaten " + weightedCount + "| " + Config.foodStackSize + "| " + foodValues);
+
         // We want to keep values above the set size
         if (weightedCount > Config.foodStackSize) {
             for (FoodValue value : foodValues) {

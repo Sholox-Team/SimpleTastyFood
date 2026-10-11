@@ -13,7 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class FoodValueCalculator {
-    public static Map<ResourceLocation, Float> customFoodValues = new HashMap<ResourceLocation, Float>();
+    public static Map<ResourceLocation, FoodValue> customFoodValues = new HashMap<ResourceLocation, FoodValue>();
 
     public static FoodValue foodValue(ResourceLocation resourceLocation, FoodProperties foodProperties) {
         return foodValue(resourceLocation, foodProperties, 1);
@@ -30,9 +30,9 @@ public class FoodValueCalculator {
             return new FoodValue(foodValue, parts);
         }
 
-        Float customFoodValue = customFoodValues.get(resourceLocation);
+        FoodValue customFoodValue = customFoodValues.get(resourceLocation);
         if (customFoodValue != null) {
-            return new FoodValue(customFoodValue, parts);
+            return customFoodValue;
         }
 
         return new FoodValue(calculateFoodValue(foodProperties), parts);

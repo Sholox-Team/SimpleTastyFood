@@ -12,6 +12,7 @@ import net.neoforged.neoforge.event.entity.player.UseItemOnBlockEvent;
 import org.sholox.simpletastyfood.Simpletastyfood;
 import org.sholox.simpletastyfood.core.FoodValueCalculator;
 import org.sholox.simpletastyfood.core.FoodValueCore;
+import org.sholox.simpletastyfood.data.CustomFoodValuesLoader;
 import org.sholox.simpletastyfood.data.FoodValue;
 
 import java.util.List;
@@ -54,17 +55,16 @@ public class CakeHelper {
     }
 
     private static void eat(BlockState blockState, ServerPlayer player) {
-        var resource = BuiltInRegistries.BLOCK.getKey(blockState.getBlock());
-        FoodProperties foodProperties = null;
-        Integer parts = null;
-
-        if (resource.toString().equals("minecraft:cake")) {
-            foodProperties = vanillaCakeBlockFoodProperties();
-            parts = 7;
-        }
-
-        FoodValue foodValue = FoodValueCalculator.foodValue(resource, foodProperties, parts);
+        FoodValue foodValue = getBlockFoodValue(blockState);
         FoodValueCore.onFoodEaten(foodValue, player);
+    }
+
+    private static FoodValue getBlockFoodValue(BlockState blockState) {
+        var resource = BuiltInRegistries.BLOCK.getKey(blockState.getBlock());
+        var defaultBites = 7;
+        var defaultFoodProperties = vanillaCakeBlockFoodProperties();
+
+        return FoodValueCalculator.foodValue(resource, defaultFoodProperties, defaultBites);
     }
 
     private static FoodProperties vanillaCakeBlockFoodProperties() {
