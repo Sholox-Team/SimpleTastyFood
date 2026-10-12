@@ -20,7 +20,7 @@ public class FoodValueCalculator {
     }
 
     public static FoodValue foodValue(ResourceLocation resourceLocation, FoodProperties foodProperties, Integer parts) {
-        FoodValueEvent foodValueEvent = new FoodValueEvent(resourceLocation, foodProperties);
+        FoodValueEvent foodValueEvent = new FoodValueEvent(resourceLocation, foodProperties, parts);
         NeoForge.EVENT_BUS.post(foodValueEvent);
 
         // If event changed food properties, then return updated value
