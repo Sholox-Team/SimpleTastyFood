@@ -13,7 +13,10 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterClientTooltipComponentFactoriesEvent;
 import net.neoforged.neoforge.client.event.RenderTooltipEvent;
+import net.neoforged.neoforge.common.NeoForge;
 import org.sholox.simpletastyfood.Simpletastyfood;
+import org.sholox.simpletastyfood.api.BonusHealthEvent;
+import org.sholox.simpletastyfood.api.TooltipRenderEvent;
 
 // Props to AppleSkin
 @EventBusSubscriber(modid = Simpletastyfood.MOD_ID, value = Dist.CLIENT)
@@ -35,6 +38,10 @@ public class TooltipRenderer {
 
         // Render tooltip
         ResourceLocation resourceLocation = BuiltInRegistries.ITEM.getKey(itemStack.getItem());
+
+        TooltipRenderEvent tooltipRenderEvent = new TooltipRenderEvent(resourceLocation);
+        NeoForge.EVENT_BUS.post(tooltipRenderEvent);
+        if (tooltipRenderEvent.isCanceled()) return;
 
         HealthTooltip foodTooltip = new HealthTooltip(resourceLocation, foodProperties, player);
         event.getTooltipElements().add(Either.right(foodTooltip));

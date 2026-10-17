@@ -12,7 +12,6 @@ import net.neoforged.neoforge.event.entity.player.UseItemOnBlockEvent;
 import org.sholox.simpletastyfood.Simpletastyfood;
 import org.sholox.simpletastyfood.core.FoodValueCalculator;
 import org.sholox.simpletastyfood.core.FoodValueCore;
-import org.sholox.simpletastyfood.data.CustomFoodValuesLoader;
 import org.sholox.simpletastyfood.data.FoodValue;
 
 import java.util.List;

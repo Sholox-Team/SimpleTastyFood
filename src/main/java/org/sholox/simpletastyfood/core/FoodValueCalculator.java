@@ -5,7 +5,9 @@ import net.minecraft.world.food.FoodProperties;
 import net.neoforged.neoforge.common.NeoForge;
 import org.sholox.simpletastyfood.Config;
 import org.sholox.simpletastyfood.Simpletastyfood;
+import org.sholox.simpletastyfood.api.BonusHealthEvent;
 import org.sholox.simpletastyfood.api.FoodValueEvent;
+import org.sholox.simpletastyfood.api.FoodValueValueEvent;
 import org.sholox.simpletastyfood.data.FoodValue;
 
 import java.util.Arrays;
@@ -23,8 +25,8 @@ public class FoodValueCalculator {
         FoodValueEvent foodValueEvent = new FoodValueEvent(resourceLocation, foodProperties, parts);
         NeoForge.EVENT_BUS.post(foodValueEvent);
 
-        // If event changed food properties, then return updated value
-        if (foodValueEvent.foodProperties != foodProperties) {
+        // If event changed food properties OR parts, then return updated value
+        if (foodValueEvent.foodProperties != foodProperties || foodValueEvent.parts != parts) {
             var foodValue = calculateFoodValue(foodValueEvent.foodProperties);
 
             return new FoodValue(foodValue, parts);
@@ -39,7 +41,12 @@ public class FoodValueCalculator {
     }
 
     private static float calculateFoodValue(FoodProperties foodProperties) {
-        return (foodProperties.nutrition() + foodProperties.saturation()) / 2f;
+        var defaultValue = (foodProperties.nutrition() + foodProperties.saturation()) / 2f;
+
+        FoodValueValueEvent foodValueValueEvent = new FoodValueValueEvent(foodProperties, defaultValue);
+        NeoForge.EVENT_BUS.post(foodValueValueEvent);
+
+        return foodValueValueEvent.value;
     }
 
     public static Float getMaxFoodValue(Float[] values) {

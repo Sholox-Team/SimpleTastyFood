@@ -7,9 +7,12 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodProperties;
+import net.neoforged.neoforge.common.NeoForge;
 import org.apache.commons.lang3.ArrayUtils;
 import org.sholox.simpletastyfood.Config;
 import org.sholox.simpletastyfood.Simpletastyfood;
+import org.sholox.simpletastyfood.api.BonusHealthEvent;
+import org.sholox.simpletastyfood.api.FoodValueEvent;
 import org.sholox.simpletastyfood.data.CustomFoodValuesLoader;
 import org.sholox.simpletastyfood.data.FoodValue;
 import org.sholox.simpletastyfood.data.ModDataAttachments;
@@ -51,9 +54,14 @@ public class FoodValueCore {
             bonusHealth = roundToTwo(bonusHealth);
         }
 
+        // Post Event
+        BonusHealthEvent bonusHealthEvent = new BonusHealthEvent.Post(bonusHealth);
+        NeoForge.EVENT_BUS.post(bonusHealthEvent);
+        bonusHealth = bonusHealthEvent.bonusHealth;
+
         // Set max health modifier if bonus health > 0
-        float futureMaxHealth = (float) (healthAttribute.getValue() + bonusHealth);
         if (bonusHealth <= 0) return;
+        float futureMaxHealth = (float) (healthAttribute.getValue() + bonusHealth);
 
         var playerCurrentHealth = player.getHealth();
 
@@ -79,7 +87,12 @@ public class FoodValueCore {
             weightedSize += 1f/foodValue.parts();
         }
 
-        return sum/weightedSize;
+        float result = sum/weightedSize;
+
+        BonusHealthEvent bonusHealthEvent = new BonusHealthEvent.Pre(result);
+        NeoForge.EVENT_BUS.post(bonusHealthEvent);
+
+        return bonusHealthEvent.bonusHealth;
     }
 
     // Player food values
