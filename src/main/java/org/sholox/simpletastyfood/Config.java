@@ -49,7 +49,8 @@ public class Config {
 
     private static final ModConfigSpec.BooleanValue SCAN_FOOD = BUILDER.comment("Scans food items during startup, to " +
             "generate food values.",
-            "If false, mod will generate relative food values only for the specified foods.").define("scanFood", true);
+            "If false, mod will generate relative food values only for the specified foods.")
+            .define("scanFood", true);
 
     // a list of strings that are treated as resource locations for items
 //    private static final ModConfigSpec.ConfigValue<List<? extends String>> ITEM_STRINGS = BUILDER.comment("A list
@@ -88,6 +89,7 @@ public class Config {
         roundHp = ROUND_HP.get();
 
         scanFood = SCAN_FOOD.get();
+
         // convert the list of strings into a set of items
 //        items = ITEM_STRINGS.get().stream().map(itemName -> BuiltInRegistries.ITEM.get(ResourceLocation.parse
 //        (itemName))).collect(Collectors.toSet());
