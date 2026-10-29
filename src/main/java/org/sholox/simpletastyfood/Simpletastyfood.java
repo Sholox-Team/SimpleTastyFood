@@ -8,6 +8,7 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.client.event.RegisterClientTooltipComponentFactoriesEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import org.sholox.simpletastyfood.data.CustomFoodValuesSyncer;
 import org.sholox.simpletastyfood.data.ModDataAttachments;
 import org.sholox.simpletastyfood.event.TooltipRenderer;
 import org.sholox.simpletastyfood.item.ModItems;
@@ -31,6 +32,7 @@ public class Simpletastyfood {
 
         // Register our mod's ModConfigSpec so that FML can create and load the config file for us
         modContainer.registerConfig(ModConfig.Type.SERVER, Config.SPEC);
+        modContainer.registerConfig(ModConfig.Type.STARTUP, ClientConfig.SPEC);
     }
 
     private void onRegisterClientTooltipComponentFactories(RegisterClientTooltipComponentFactoriesEvent event) {

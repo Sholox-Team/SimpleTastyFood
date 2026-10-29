@@ -7,10 +7,14 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodProperties;
+import net.neoforged.neoforge.common.NeoForge;
 import org.apache.commons.lang3.ArrayUtils;
 import org.sholox.simpletastyfood.Config;
 import org.sholox.simpletastyfood.Simpletastyfood;
+import org.sholox.simpletastyfood.api.BonusHealthEvent;
+import org.sholox.simpletastyfood.api.FoodValueEvent;
 import org.sholox.simpletastyfood.data.CustomFoodValuesLoader;
+import org.sholox.simpletastyfood.data.FoodValue;
 import org.sholox.simpletastyfood.data.ModDataAttachments;
 
 import java.util.ArrayList;
@@ -24,15 +28,11 @@ public class FoodValueCore {
 
     public static float valueForHealth = 1f;
 
-    public static void onFoodEaten(ServerPlayer player, ResourceLocation resourceLocation,
-                                   FoodProperties foodProperties) {
-        float foodValue = FoodValueCalculator.foodValue(resourceLocation, foodProperties);
+    public static void onFoodEaten(FoodValue foodValue, ServerPlayer player) {
         saveEatenFoodValue(player, foodValue);
-
         updatePlayerMaxHealth(player);
-        if (player instanceof ServerPlayer serverPlayer) {
-            serverPlayer.resetSentInfo();
-        }
+
+        player.resetSentInfo();
     }
 
     // Player max health
@@ -54,9 +54,14 @@ public class FoodValueCore {
             bonusHealth = roundToTwo(bonusHealth);
         }
 
+        // Post Event
+        BonusHealthEvent bonusHealthEvent = new BonusHealthEvent.Post(bonusHealth);
+        NeoForge.EVENT_BUS.post(bonusHealthEvent);
+        bonusHealth = bonusHealthEvent.bonusHealth;
+
         // Set max health modifier if bonus health > 0
-        float futureMaxHealth = (float) (healthAttribute.getValue() + bonusHealth);
         if (bonusHealth <= 0) return;
+        float futureMaxHealth = (float) (healthAttribute.getValue() + bonusHealth);
 
         var playerCurrentHealth = player.getHealth();
 
@@ -72,37 +77,58 @@ public class FoodValueCore {
     }
 
     private static float calculateFoodValueBonusHealth(Player player) {
-        ArrayList<Float> foodValues = getFoodValues(player);
-        float sum = foodValues.stream()
-                .reduce(0f, (subresult, value) -> subresult + (value / valueForHealth));
+        ArrayList<FoodValue> foodValues = FoodValue.get(player);
 
-        return sum/foodValues.size();
+        float sum = 0f;
+        float weightedSize = 0f;
+
+        for (FoodValue foodValue : foodValues) {
+            sum += foodValue.weightedValue() / valueForHealth;
+            weightedSize += 1f/foodValue.parts();
+        }
+
+        float result = sum/weightedSize;
+
+        BonusHealthEvent bonusHealthEvent = new BonusHealthEvent.Pre(result);
+        NeoForge.EVENT_BUS.post(bonusHealthEvent);
+
+        return bonusHealthEvent.bonusHealth;
     }
 
     // Player food values
-    private static void saveEatenFoodValue(Player player, float foodValue) {
-        ArrayList<Float> foodValues = getFoodValues(player);
+    // We do all of this logic, because food can have multiple parts.
+    // List of 6-part meals is different from list of 1-part meals. In the end they should allow for the same bonus hp to apply
+    private static void saveEatenFoodValue(Player player, FoodValue foodValue) {
+        ArrayList<FoodValue> foodValues = FoodValue.get(player);
         foodValues.add(foodValue);
 
-        while (foodValues.size() > Config.foodStackSize) {
-            foodValues.removeFirst();
+        double weightedCount = foodValues.stream()
+                .mapToDouble(value -> 1f/value.parts())
+                .sum();
+
+        ArrayList<FoodValue> result = new ArrayList<>(foodValues);
+
+        System.out.println("Test eaten " + weightedCount + "| " + Config.foodStackSize + "| " + foodValues);
+
+        // We want to keep values above the set size
+        if (weightedCount > Config.foodStackSize) {
+            for (FoodValue value : foodValues) {
+                float weightedSize = 1f / value.parts();
+
+                if (weightedCount - weightedSize < Config.foodStackSize) { break; }
+
+                result.removeFirst();
+                weightedCount -= weightedSize;
+            }
         }
 
-        setFoodValues(player, foodValues);
-    }
-
-    private static ArrayList<Float> getFoodValues(Player player) {
-        return new ArrayList<>(player.getData(ModDataAttachments.FOOD_VALUES));
-    }
-
-    private static void setFoodValues(Player player, ArrayList<Float> foodValues) {
-        player.setData(ModDataAttachments.FOOD_VALUES, foodValues);
+        FoodValue.setFoodValues(player, result);
     }
 
     // Food to health properties
     public static void updateFoodToHealthProperties(Map<ResourceLocation, FoodProperties> allFoodProperties) {
         Float[] allFoodValues = allFoodProperties.entrySet().stream()
-                .map(entry -> FoodValueCalculator.foodValue(entry.getKey(), entry.getValue()))
+                .map(entry -> FoodValueCalculator.foodValue(entry.getKey(), entry.getValue()).foodValue())
                 .toArray(Float[]::new);
 
         allFoodValues = ArrayUtils.addAll(allFoodValues, CustomFoodValuesLoader.getCustomValuesFlat());

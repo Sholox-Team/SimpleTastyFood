@@ -8,6 +8,7 @@ import net.minecraft.world.inventory.tooltip.TooltipComponent;
 import org.sholox.simpletastyfood.Config;
 import org.sholox.simpletastyfood.core.FoodValueCalculator;
 import org.sholox.simpletastyfood.core.FoodValueCore;
+import org.sholox.simpletastyfood.data.FoodValue;
 
 import javax.annotation.Nullable;
 
@@ -15,9 +16,9 @@ public class HealthTooltip implements TooltipComponent {
     String bonusHealthText;
 
     HealthTooltip(ResourceLocation resourceLocation, FoodProperties foodProperties, Player player) {
-        float foodValue = FoodValueCalculator.foodValue(resourceLocation, foodProperties);
+        FoodValue foodValue = FoodValueCalculator.foodValue(resourceLocation, foodProperties);
 
-        var bonusHealth = foodValue / FoodValueCore.valueForHealth;
+        var bonusHealth = foodValue.foodValue() / FoodValueCore.valueForHealth;
         bonusHealth = clampBonusHealth(bonusHealth, player);
 
         float roundedBonusHealth = (FoodValueCore.roundToTwo(bonusHealth) / 2.0f);

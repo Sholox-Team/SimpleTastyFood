@@ -1,34 +1,52 @@
 package org.sholox.simpletastyfood.data;
 
-import io.netty.buffer.ByteBuf;
-import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
+import org.sholox.simpletastyfood.Simpletastyfood;
+import org.sholox.simpletastyfood.core.FoodValueCalculator;
+import org.sholox.simpletastyfood.event.EventListener;
 
-import java.util.HashMap;
-import java.util.Map;
-
+@EventBusSubscriber(modid = Simpletastyfood.MOD_ID)
 public class CustomFoodValuesSyncer {
-    private record FoodValuesPacket(Map<String, Float> values) {
-        public static final StreamCodec<ByteBuf, FoodValuesPacket> STREAM_CODEC =
-                StreamCodec.composite(
-                        ByteBufCodecs.map(
-                                HashMap::new,
-                                ByteBufCodecs.STRING_UTF8,
-                                ByteBufCodecs.FLOAT
-                        ),
-                        FoodValuesPacket::values,
-                        FoodValuesPacket::new
-                );
+    public static void sendCustomValues(ServerPlayer player) {
+        var customValues = CustomFoodValuesLoader.getCustomValuesString();
+        var packet = new CustomFoodValuesPayload(customValues);
+
+        PacketDistributor.sendToPlayer(player, packet);
     }
 
-    public void sendCustomValues(ServerPlayer player) {
-        Map<ResourceLocation, Float> customValues = CustomFoodValuesLoader.getCustomValues();
-//        FoodValuesPacket packet = new FoodValuesPacket(customValues);
+    public static void handleDataOnMain(final CustomFoodValuesPayload data, final IPayloadContext context) {
+        var json = data.json();
 
-//        PacketDistributor.sendToPlayer(player, packet);
+        EventListener.manualSetupFoodConfig();
+
+        CustomFoodValuesLoader.saveCustomValuesString(json);
+        FoodValueCalculator.customFoodValues = CustomFoodValuesLoader.getCustomValues();
+    }
+
+    @SubscribeEvent
+    public static void register(final RegisterPayloadHandlersEvent event) {
+        final PayloadRegistrar registrar = event.registrar("1.1");
+        registrar.playToClient(
+                CustomFoodValuesPayload.TYPE,
+                CustomFoodValuesPayload.STREAM_CODEC,
+                CustomFoodValuesSyncer::handleDataOnMain
+        );
+    }
+
+    @SubscribeEvent
+    public static void onPlayerLogin(final PlayerEvent.PlayerLoggedInEvent event) {
+        if (event.getEntity() instanceof ServerPlayer serverPlayer) {
+            // Not remote server, no need to send values
+            if (serverPlayer.connection.getConnection().isMemoryConnection()) { return; }
+
+            sendCustomValues(serverPlayer);
+        }
     }
 }
