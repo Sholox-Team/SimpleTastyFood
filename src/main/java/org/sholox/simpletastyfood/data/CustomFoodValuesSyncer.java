@@ -9,6 +9,7 @@ import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import org.sholox.simpletastyfood.Simpletastyfood;
+import org.sholox.simpletastyfood.core.FoodValueCalculator;
 import org.sholox.simpletastyfood.event.EventListener;
 
 @EventBusSubscriber(modid = Simpletastyfood.MOD_ID)
@@ -23,8 +24,10 @@ public class CustomFoodValuesSyncer {
     public static void handleDataOnMain(final CustomFoodValuesPayload data, final IPayloadContext context) {
         var json = data.json();
 
-        CustomFoodValuesLoader.saveCustomValuesString(json);
         EventListener.manualSetupFoodConfig();
+
+        CustomFoodValuesLoader.saveCustomValuesString(json);
+        FoodValueCalculator.customFoodValues = CustomFoodValuesLoader.getCustomValues();
     }
 
     @SubscribeEvent

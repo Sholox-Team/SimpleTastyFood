@@ -87,6 +87,9 @@ public class EventListener {
     @SubscribeEvent
     public static void setupFoodConfig(ServerStartingEvent event) {
         manualSetupFoodConfig();
+
+        CustomFoodValuesLoader.load();
+        FoodValueCalculator.customFoodValues = CustomFoodValuesLoader.getCustomValues();
     }
 
     public static void manualSetupFoodConfig() {
@@ -108,9 +111,6 @@ public class EventListener {
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         }
 
-        CustomFoodValuesLoader.load();
-
-        FoodValueCalculator.customFoodValues = CustomFoodValuesLoader.getCustomValues();
         FoodValueCore.updateFoodToHealthProperties(allFoodProperties);
     }
 }

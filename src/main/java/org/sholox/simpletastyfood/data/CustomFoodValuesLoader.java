@@ -7,6 +7,7 @@ import com.google.gson.reflect.TypeToken;
 import net.minecraft.resources.ResourceLocation;
 import net.neoforged.fml.loading.FMLPaths;
 import org.sholox.simpletastyfood.Simpletastyfood;
+import org.sholox.simpletastyfood.core.FoodValueCore;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -48,8 +49,10 @@ public class CustomFoodValuesLoader {
         Type type = new TypeToken<Map<String, JsonElement>>() {}.getType();
 
         Map<String, JsonElement> raw = GSON.fromJson(reader, type);
+        // We convert provided custom foodValue, so provided value is considered as bonus hp, instead of some random value
+        var valueForHealth = FoodValueCore.valueForHealth;
 
-        return raw.entrySet().stream()
+        var foodValueMap = raw.entrySet().stream()
                 .collect(Collectors.toMap(
                         entry -> ResourceLocation.parse(entry.getKey()),
                         entry -> {
@@ -57,13 +60,16 @@ public class CustomFoodValuesLoader {
 
                             // Old format key:float
                             if (value.isJsonPrimitive()) {
-                                return new FoodValue(value.getAsFloat(), 1);
+                                return new FoodValue(value.getAsFloat() * valueForHealth, 1);
                             }
 
                             // New format: key: { "foodValue": 4.0, "parts": 2 }
-                            return GSON.fromJson(value, FoodValue.class);
+                            FoodValue foodValue = GSON.fromJson(value, FoodValue.class);
+
+                            return new FoodValue(foodValue.foodValue() * valueForHealth, foodValue.parts());
                         }
                 ));
+        return  foodValueMap;
     }
 
     public static String getCustomValuesString() {
