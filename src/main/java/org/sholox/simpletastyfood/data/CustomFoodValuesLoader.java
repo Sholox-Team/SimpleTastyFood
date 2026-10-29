@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.fml.loading.FMLPaths;
 import org.sholox.simpletastyfood.Simpletastyfood;
 
 import java.io.IOException;
@@ -24,11 +25,8 @@ public class CustomFoodValuesLoader {
             .setPrettyPrinting()
             .create();
 
-    public static void load(Path directory) {
-        Path path = directory
-                .resolve("config")
-                .resolve("stf")
-                .resolve(Simpletastyfood.MOD_ID + "_custom_values.json");
+    public static void load() {
+        Path path = getCustomValuesPath();
 
         if (!Files.exists(path)) {
             createEmptyJson(path);
@@ -68,6 +66,38 @@ public class CustomFoodValuesLoader {
                 ));
     }
 
+    public static String getCustomValuesString() {
+        Path path = getCustomValuesPath();
+
+        if (!Files.exists(path)) {
+            createEmptyJson(path);
+            System.out.println("SimpleTastyFood. Creating empty json for custom values.");
+
+            return null;
+        }
+
+        try {
+            return Files.readString(path);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void saveCustomValuesString(String string) {
+        Path path = getCustomValuesPath();
+
+        try {
+            if (path.getParent() != null) {
+                Files.createDirectories(path.getParent());
+            }
+            try (Writer writer = Files.newBufferedWriter(path)) {
+                writer.write(string);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to create empty food values file", e);
+        }
+    }
+
     public static Map<ResourceLocation, FoodValue> getCustomValues() {
         return customValues;
     }
@@ -90,5 +120,11 @@ public class CustomFoodValuesLoader {
         } catch (IOException e) {
             throw new RuntimeException("Failed to create empty food values file", e);
         }
+    }
+
+    private static Path getCustomValuesPath() {
+        return FMLPaths.CONFIGDIR.get()
+                .resolve("stf")
+                .resolve(Simpletastyfood.MOD_ID + "_custom_values.json");
     }
 }

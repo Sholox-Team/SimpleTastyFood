@@ -86,6 +86,10 @@ public class EventListener {
 
     @SubscribeEvent
     public static void setupFoodConfig(ServerStartingEvent event) {
+        manualSetupFoodConfig();
+    }
+
+    public static void manualSetupFoodConfig() {
         Map<ResourceLocation, FoodProperties> allFoodProperties = new HashMap<>(){};
 
         if (Config.scanFood) {
@@ -104,7 +108,7 @@ public class EventListener {
                     .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
         }
 
-        CustomFoodValuesLoader.load(event.getServer().getServerDirectory());
+        CustomFoodValuesLoader.load();
 
         FoodValueCalculator.customFoodValues = CustomFoodValuesLoader.getCustomValues();
         FoodValueCore.updateFoodToHealthProperties(allFoodProperties);

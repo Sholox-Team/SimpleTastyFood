@@ -8,6 +8,7 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.client.event.RegisterClientTooltipComponentFactoriesEvent;
 import net.neoforged.neoforge.client.gui.ConfigurationScreen;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import org.sholox.simpletastyfood.data.CustomFoodValuesSyncer;
 import org.sholox.simpletastyfood.data.ModDataAttachments;
 import org.sholox.simpletastyfood.event.TooltipRenderer;
 import org.sholox.simpletastyfood.item.ModItems;
