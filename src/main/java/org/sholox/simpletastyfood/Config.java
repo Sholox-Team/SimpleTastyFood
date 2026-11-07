@@ -41,6 +41,13 @@ public class Config {
     private static final ModConfigSpec.BooleanValue ROUND_HP = BUILDER.comment("Rounds hp, so there can't be max hp " +
             "with half heart empty.").define("roundHp", true);
 
+    private static final ModConfigSpec.DoubleValue NUTRITION_MULTIPLIER =
+            BUILDER.comment("Multiplier of a nutrition property of the food, to determine final food value. Custom values skip this.")
+                    .defineInRange("nutritionMultiplier", 1.0, 0.0, Double.MAX_VALUE);
+    private static final ModConfigSpec.DoubleValue SATURATION_MULTIPLIER =
+            BUILDER.comment("Multiplier of a saturation property of the food, to determine final food value. Custom values skip this.")
+                    .defineInRange("saturationMultiplier", 1.0, 0.0, Double.MAX_VALUE);
+
     private static final ModConfigSpec.ConfigValue<String> FOOD_FILTERING = BUILDER.comment("What filtering logic is " +
             "applied to get the 'best' food available.", "NONE - gets the best food and calculates hp gain from it, " +
             "no filtering applied.", "PERCENTILE - gets the 95th percentile best food, ignoring one of a kind food.")
@@ -65,6 +72,9 @@ public class Config {
     public static int minHealth;
     public static int maxHealth;
 
+    public static double nutritionMultiplier;
+    public static double saturationMultiplier;
+
     public static boolean setMinHealth;
 
     public static boolean clampMaxHealth;
@@ -81,6 +91,10 @@ public class Config {
 
         minHealth = MIN_HEALTH.get();
         maxHealth = MAX_HEALTH.get();
+
+        nutritionMultiplier = NUTRITION_MULTIPLIER.get();
+        saturationMultiplier = SATURATION_MULTIPLIER.get();
+
         setMinHealth = SET_MIN_HEALTH.get();
 
         foodFiltering = FOOD_FILTERING.get();
