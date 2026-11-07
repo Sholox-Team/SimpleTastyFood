@@ -4,6 +4,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodProperties;
@@ -18,6 +19,7 @@ import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingEntityUseItemEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
+import net.neoforged.neoforge.event.tick.EntityTickEvent;
 import org.sholox.simpletastyfood.Config;
 import org.sholox.simpletastyfood.core.FoodValueCalculator;
 import org.sholox.simpletastyfood.core.FoodValueCore;
@@ -46,8 +48,6 @@ public class EventListener {
                 attribute.getInstance(Attributes.MAX_HEALTH).setBaseValue(Config.minHealth);
             }
         }
-
-        PlayerHungerManager.test(player);
 
         if (player instanceof ServerPlayer serverPlayer) {
             FoodValueCore.updatePlayerMaxHealth(serverPlayer);
