@@ -41,9 +41,12 @@ public class FoodValueCalculator {
     }
 
     private static float calculateFoodValue(FoodProperties foodProperties) {
-        var defaultValue = (foodProperties.nutrition() + foodProperties.saturation()) / 2f;
+        var nutritionValue = foodProperties.nutrition() * Config.nutritionMultiplier;
+        var saturationValue = foodProperties.saturation() * Config.saturationMultiplier;
 
-        FoodValueValueEvent foodValueValueEvent = new FoodValueValueEvent(foodProperties, defaultValue);
+        var calculatedValue = (float) (nutritionValue + saturationValue) / 2f;
+
+        FoodValueValueEvent foodValueValueEvent = new FoodValueValueEvent(foodProperties, calculatedValue);
         NeoForge.EVENT_BUS.post(foodValueValueEvent);
 
         return foodValueValueEvent.value;
