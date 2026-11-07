@@ -25,15 +25,15 @@ public class Config {
             Integer.MAX_VALUE);
 
     private static final ModConfigSpec.IntValue MIN_HEALTH =
-            BUILDER.comment("Minimum health of a player.").defineInRange("minHealth", 10, 1, Integer.MAX_VALUE);
+            BUILDER.comment("Minimum health of a player.").defineInRange("minHealth", 20, 1, Integer.MAX_VALUE);
 
     private static final ModConfigSpec.IntValue MAX_HEALTH =
-            BUILDER.comment("Maximum health of a player.").defineInRange("maxHealth", 20, 1, Integer.MAX_VALUE);
+            BUILDER.comment("Maximum health of a player.").defineInRange("maxHealth", 40, 1, Integer.MAX_VALUE);
 
     private static final ModConfigSpec.BooleanValue SET_MIN_HEALTH = BUILDER.comment("Changes the player's maximum hp" +
             " to the value, provided at minHealth.", "Disabling it makes minHealth only be used for bonus hp " +
             "calculations.", "WARNING: Disabling it doesn't return the previous max hp! If no other mod changes hp, " +
-            "first set new minHp, then disable this property.").define("setMinHealth", true);
+            "first set new minHp, then disable this property.").define("setMinHealth", false);
 
     private static final ModConfigSpec.BooleanValue CLAMP_MAX_HEALTH = BUILDER.comment("If false and filtering makes " +
             "some food better than the 'best' food, it can go beyond the defined 'max' hp.", "Otherwise it will clamp" +
@@ -55,8 +55,8 @@ public class Config {
                     Arrays.asList("NONE", "PERCENTILE"));
 
     private static final ModConfigSpec.BooleanValue SCAN_FOOD = BUILDER.comment("Scans food items during startup, to " +
-            "generate food values.",
-            "If false, mod will generate relative food values only for the specified foods.")
+            "map food values for other calculations.",
+            "If false, mod will generate relative food values only for the custom food values provided in simpletastyfood_custom_values.json.")
             .define("scanFood", true);
 
     static final ModConfigSpec SPEC = BUILDER.build();
